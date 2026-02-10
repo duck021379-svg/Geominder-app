@@ -1,1 +1,1 @@
-this is a reminding application based on location
+this is an ai reminding application based on location
