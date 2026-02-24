@@ -1,0 +1,95 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  MapPin, 
+  Navigation, 
+  Plus, 
+  List, 
+  History, 
+  ShieldCheck, 
+  Trash2, 
+  Map as MapIcon,
+  Loader2,
+  CheckCircle2
+} from 'lucide-react';
+
+/** * NOTE: In a production Netlify environment, 
+ * saveLocation and getAllLocations would be called 
+ * via an API or Netlify Function to protect your DB URL.
+ */
+
+const App = () => {
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [currentCoords, setCurrentCoords] = useState(null);
+  const [view, setView] = useState('list'); // 'list' or 'add'
+  const [statusMsg, setStatusMsg] = useState('');
+
+  // Mock data for the preview since we aren't in the Termux shell right now
+  useEffect(() => {
+    setLoading(true);
+    // Simulate fetching from your new Postgres DB
+    setTimeout(() => {
+      setLocations([
+        { id: 1, name: "JF Travels HQ", latitude: 34.0522, longitude: -118.2437, description: "Main travel hub" },
+        { id: 2, name: "Phillips Design Studio", latitude: 40.7128, longitude: -74.0060, description: "Architectural site" }
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  const getPhoneLocation = () => {
+    if (!navigator.geolocation) {
+      setStatusMsg("Geolocation not supported by your browser");
+      return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCurrentCoords({
+          lat: position.coords.latitude.toFixed(4),
+          lng: position.coords.longitude.toFixed(4)
+        });
+        setLoading(false);
+      },
+      () => {
+        setStatusMsg("Unable to retrieve location");
+        setLoading(false);
+      }
+    );
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    // This is where your geominder_bridge.js 'saveLocation' function triggers!
+    const formData = new FormData(e.target);
+    const newLoc = {
+      name: formData.get('name'),
+      description: formData.get('description'),
+      latitude: currentCoords?.lat || 0,
+      longitude: currentCoords?.lng || 0
+    };
+
+    // Simulate the database write you just set up in Termux
+    setTimeout(() => {
+      setLocations([ { id: Date.now(), ...newLoc }, ...locations]);
+      setSaving(false);
+      setView('list');
+      setStatusMsg('Location saved to Netlify DB!');
+      setTimeout(() => setStatusMsg(''), 3000);
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans pb-24">
+      {/* Header */}
+      <header className="p-6 pt-12 bg-[#1e293b] border-b border-slate-700 shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-orange-500 rounded-2xl shadow-lg shadow-orange-500/20">
+            <MapPin className="text-white w-6 h-6" />
+
+
+
